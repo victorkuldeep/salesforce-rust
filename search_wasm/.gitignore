@@ -1,0 +1,6 @@
+/target
+/node_modules
+/pkg
+*.wasm
+!rollup_lwc/*.js
+rollup.config.js

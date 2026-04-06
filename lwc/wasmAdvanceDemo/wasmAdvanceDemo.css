@@ -1,0 +1,371 @@
+.wasm-card {
+  --sds-c-card-background: #ffffff;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1.25rem;
+  background: #f4f6f9;
+  border-bottom: 1px solid #dddbda;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.header-left h2 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #080707;
+}
+
+.header-left lightning-icon {
+  --sds-s-icon-color: #1b96ff;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+}
+
+.upload-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.upload-label {
+  font-size: 0.75rem;
+  color: #666;
+}
+
+.upload-inline label {
+  margin: 0;
+  font-size: 0.75rem;
+}
+
+/* Loading */
+.loading-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.95);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.loading-message {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: #666;
+  text-align: center;
+  max-width: 300px;
+}
+
+.loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.loading-step {
+  font-size: 0.75rem;
+  color: #999;
+}
+
+.loading-time {
+  font-size: 0.75rem;
+  color: #1b96ff;
+  font-weight: 500;
+}
+
+.progress-container {
+  width: 200px;
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #1b96ff, #0070d2);
+  transition: width 0.3s ease;
+}
+
+/* Error */
+.error-banner {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1.25rem;
+  background: #fff3e0;
+  color: #e65100;
+  font-size: 0.875rem;
+}
+
+/* Dashboard - Full Row */
+.dashboard {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem 1.25rem;
+  background: #f4f6f9;
+  border-bottom: 1px solid #dddbda;
+  flex-wrap: wrap;
+}
+
+.metric {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.625rem;
+  background: #fff;
+  border: 1px solid #dddbda;
+  border-radius: 0.25rem;
+  white-space: nowrap;
+}
+
+.metric lightning-icon {
+  --sds-s-icon-color: #666;
+}
+
+.metric-value {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #080707;
+}
+
+.metric-value .metric-label {
+  font-size: 0.6875rem;
+  font-weight: 400;
+  color: #666;
+  margin-left: 0.25rem;
+}
+
+.metric-value.zero-copy {
+  color: #04844b;
+}
+
+.metric.cache-hit {
+  background: #d4edda;
+  border-color: #28a745;
+}
+
+.metric.cache-hit lightning-icon {
+  --sds-s-icon-color: #04844b;
+}
+
+.metric.cache-hit .metric-value {
+  color: #04844b;
+}
+
+/* Aggregate buttons - different style */
+.metric.aggregate {
+  background: #eef3f7;
+  border-color: #1b96ff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.metric.aggregate:hover {
+  background: #dbefff;
+}
+
+.metric.aggregate lightning-button-icon {
+  --sds-s-icon-color: #1b96ff;
+  cursor: pointer;
+}
+
+.metric.aggregate .metric-value {
+  font-size: 0.75rem;
+  color: #1b96ff;
+}
+
+/* Search Row */
+.search-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid #dddbda;
+  flex-wrap: wrap;
+}
+
+.search-bar {
+  display: flex;
+  flex: 1;
+  gap: 0.5rem;
+  min-width: 300px;
+}
+
+.search-input {
+  flex: 1;
+}
+
+.search-input lightning-input {
+  --sds-c-input-height: 2rem;
+}
+
+.search-actions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.page-size-select {
+  width: 80px;
+}
+
+.page-size-select lightning-combobox {
+  --sds-c-input-font-size: 0.75rem;
+}
+
+/* Validation */
+.validation-error {
+  display: flex;
+  align-items: center;
+  padding: 0.375rem 1.25rem;
+  background: #fff3e0;
+  color: #e65100;
+  font-size: 0.8125rem;
+}
+
+/* Summary */
+.summary-section {
+  padding: 0.5rem 1.25rem;
+  background: #f4f6f9;
+  border-bottom: 1px solid #dddbda;
+}
+
+.summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #080707;
+}
+
+/* Results */
+.results {
+  padding: 0 1.25rem;
+}
+
+/* Footer */
+.footer {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1.25rem;
+  background: #f4f6f9;
+  border-top: 1px solid #dddbda;
+}
+
+.pagination-left {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.pagination-center {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pagination-right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.page-info {
+  font-size: 0.875rem;
+  color: #080707;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.results-count {
+  font-size: 0.875rem;
+  color: #666;
+  margin-right: 0.75rem;
+  white-space: nowrap;
+}
+
+/* Force lightning-button-group to horizontal layout */
+lightning-button-group {
+  display: flex !important;
+}
+
+lightning-button-group::parts(root) {
+  display: flex !important;
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  color: #999;
+}
+
+.empty-state lightning-icon {
+  --sds-s-icon-color: #c9c9c9;
+  margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .card-header {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+  
+  .search-row {
+    flex-direction: column;
+  }
+  
+  .search-bar {
+    flex-direction: column;
+  }
+  
+  .search-actions {
+    justify-content: stretch;
+  }
+  
+  .search-actions lightning-button {
+    flex: 1;
+  }
+  
+  .dashboard {
+    flex-wrap: wrap;
+  }
+  
+  .footer {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .pagination-center {
+    order: -1;
+  }
+}

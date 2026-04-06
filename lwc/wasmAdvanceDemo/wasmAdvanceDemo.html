@@ -1,0 +1,173 @@
+<template>
+  <lightning-card class="wasm-card">
+    <!-- Header -->
+    <div class="card-header">
+      <div class="header-left">
+        <lightning-icon icon-name="utility:search" size="small"></lightning-icon>
+        <h2>RUST Powered Enterprise Search Engine — Salesforce LWC Demo</h2>
+      </div>
+        <div class="header-right">
+        <div class="upload-inline">
+          <input type="file" accept=".gz,.json.gz" class="slds-file-selector__input slds-assistive-text" id="file-upload-header" onchange={handleFileUpload} disabled={loading} />
+          <label class="slds-button slds-button_neutral slds-button_small" for="file-upload-header">
+            <lightning-icon icon-name="utility:upload" size="x-small" class="slds-m-right_xx-small"></lightning-icon>
+            {uploadFileName || 'Upload .gz'}
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- WASM Loading (initial) -->
+    <template if:true={wasmLoading}>
+      <div class="loading-overlay">
+        <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+        <p class="loading-message">{loadingMessage}</p>
+      </div>
+    </template>
+
+    <!-- Data Loading -->
+    <template if:true={loading}>
+      <div class="loading-overlay">
+        <div class="loading-content">
+          <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+          <p class="loading-message">{loadingMessage}</p>
+          <template if:true={loadingTime}>
+            <p class="loading-time">Elapsed: {loadingTime}s</p>
+          </template>
+        </div>
+      </div>
+    </template>
+
+    <!-- Error -->
+    <template if:true={error}>
+      <div class="error-banner">
+        <lightning-icon icon-name="utility:error" size="small" class="slds-m-right_small"></lightning-icon>
+        {error}
+      </div>
+    </template>
+
+    <!-- Dashboard -->
+    <template if:true={engineReady}>
+      <div class="dashboard">
+        <div class="metric">
+          <lightning-icon icon-name="utility:table" size="small"></lightning-icon>
+          <span class="metric-value">{rowCountFormatted} <span class="metric-label">rows</span></span>
+        </div>
+        <div class="metric">
+          <lightning-icon icon-name="utility:memory" size="small"></lightning-icon>
+          <span class="metric-value">{datasetSizeMb} <span class="metric-label">MB</span></span>
+        </div>
+        <div class="metric">
+          <lightning-icon icon-name="utility:bolt" size="small"></lightning-icon>
+          <span class="metric-value zero-copy">0 <span class="metric-label">js copies</span></span>
+        </div>
+        <div class="metric">
+          <lightning-icon icon-name="utility:timer" size="small"></lightning-icon>
+          <span class="metric-value">{queryTimeMs} <span class="metric-label">ms</span></span>
+        </div>
+        <template if:true={showCacheHit}>
+          <div class="metric cache-hit">
+            <lightning-icon icon-name="utility:success" size="small"></lightning-icon>
+            <span class="metric-value">HIT <span class="metric-label">cache</span></span>
+          </div>
+        </template>
+        <div class="metric aggregate" onclick={runSummaryCountByCountry} title="Click to count by country">
+          <lightning-button-icon icon-name="utility:filter" size="small" variant="bare" onclick={runSummaryCountByCountry}></lightning-button-icon>
+          <span class="metric-value">Count by Country</span>
+        </div>
+        <div class="metric aggregate" onclick={runSummaryAvgPrice} title="Click for avg price by category">
+          <lightning-button-icon icon-name="utility:summary" size="small" variant="bare" onclick={runSummaryAvgPrice}></lightning-button-icon>
+          <span class="metric-value">Avg Price</span>
+        </div>
+      </div>
+    </template>
+
+    <!-- Search + Page Size Row -->
+    <div class="search-row">
+      <div class="search-bar">
+        <div class="search-input">
+          <lightning-input
+            type="search"
+            value={query}
+            onchange={handleQueryChange}
+            onkeyup={handleKeyUp}
+            placeholder='Enter query: country = "India" OR price > 1000'
+            variant="label-hidden"
+          ></lightning-input>
+        </div>
+        <div class="search-actions">
+          <lightning-button variant="brand" label="Search" onclick={runSearch} disabled={searchDisabled}></lightning-button>
+          <lightning-button variant="neutral" label="Demo Query" onclick={runDemoQuery} disabled={searchDisabled}></lightning-button>
+          <lightning-button variant="neutral" label="Clear" onclick={clearSearch} disabled={searchDisabled}></lightning-button>
+        </div>
+      </div>
+      <div class="page-size-select">
+        <lightning-combobox
+          label="Rows"
+          value={pageSize}
+          options={pageSizeOptions}
+          onchange={handlePageSizeChange}
+          variant="label-hidden"
+        ></lightning-combobox>
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <template if:true={showSummaryStats}>
+      <div class="summary-section">
+        <div class="summary-header">
+          <span>Aggregation Results</span>
+          <lightning-button-icon icon-name="utility:close" size="small" onclick={closeSummary}></lightning-button-icon>
+        </div>
+        <lightning-datatable
+          key-field="id"
+          data={summaryRows}
+          columns={summaryColumns}
+          hide-checkbox-column
+        ></lightning-datatable>
+      </div>
+    </template>
+
+    <!-- Results -->
+    <template if:true={engineReady}>
+      <div class="results">
+        <lightning-datatable
+          key-field="id"
+          data={pagedRows}
+          columns={columns}
+          hide-checkbox-column
+        ></lightning-datatable>
+      </div>
+    </template>
+
+    <!-- Footer -->
+    <template if:true={engineReady}>
+      <div class="footer">
+        <div class="pagination-left">
+          <span class="results-count">Showing {visibleCount} of {totalMatchesFormatted}</span>
+        </div>
+        <div class="pagination-center">
+          <span class="page-info">Page {page} of {totalPages}</span>
+        </div>
+        <div class="pagination-right">
+          <lightning-button-group>
+            <lightning-button label="First" onclick={goToFirst} disabled={isFirst} variant="neutral" icon-name="utility:jump_to_bottom"></lightning-button>
+            <lightning-button label="Prev" onclick={prevPage} disabled={isFirst} icon-name="utility:left"></lightning-button>
+            <lightning-button label="Next" onclick={nextPage} disabled={isLast} icon-name="utility:right"></lightning-button>
+            <lightning-button label="Last" onclick={goToLast} disabled={isLast} variant="neutral" icon-name="utility:jump_to_top"></lightning-button>
+          </lightning-button-group>
+        </div>
+      </div>
+    </template>
+
+    <!-- Empty State -->
+    <template if:false={engineReady}>
+      <template if:false={loading}>
+        <div class="empty-state">
+          <lightning-icon icon-name="utility:search" size="large"></lightning-icon>
+          <p>Upload a .json.gz file to begin</p>
+        </div>
+      </template>
+    </template>
+  </lightning-card>
+</template>
