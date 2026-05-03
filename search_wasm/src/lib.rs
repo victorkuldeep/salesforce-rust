@@ -85,6 +85,9 @@ enum Expr {
     And(Vec<Expr>),
     Not(Box<Expr>),
     Term(String),
+    StartsWith(String),
+    EndsWith(String),
+    Contains(String),
     FuzzyTerm(String),
     Predicate(Predicate),
     All,
@@ -300,13 +303,13 @@ fn tokenize(input: &str) -> Result<Vec<Token>, ParseError> {
                         kind: TokenKind::Number(num),
                         pos: start,
                     });
-                } else if c.is_ascii_alphanumeric() || c == '_' {
+                } else if c.is_ascii_alphanumeric() || c == '_' || c == '*' {
                     let start = i;
                     let mut s = String::new();
                     s.push(c);
                     i += 1;
                     while i < chars.len()
-                        && (chars[i].is_ascii_alphanumeric() || chars[i] == '_' || chars[i] == '.')
+                        && (chars[i].is_ascii_alphanumeric() || chars[i] == '_' || chars[i] == '.' || chars[i] == '*')
                     {
                         s.push(chars[i]);
                         i += 1;
@@ -464,7 +467,16 @@ impl Parser {
                     Ok(Expr::Predicate(pred))
                 } else {
                     let term = self.parse_term()?;
-                    Ok(Expr::Term(term))
+                    if let Some((wt, val)) = detect_wildcard(&term) {
+                        match wt {
+                            "StartsWith" => Ok(Expr::StartsWith(val.to_string())),
+                            "EndsWith" => Ok(Expr::EndsWith(val.to_string())),
+                            "Contains" => Ok(Expr::Contains(val.to_string())),
+                            _ => Ok(Expr::Term(term)),
+                        }
+                    } else {
+                        Ok(Expr::Term(term))
+                    }
                 }
             }
             TokenKind::Fuzzy => {
@@ -474,7 +486,16 @@ impl Parser {
             }
             TokenKind::String(_) => {
                 let term = self.parse_term()?;
-                Ok(Expr::Term(term))
+                if let Some((wt, val)) = detect_wildcard(&term) {
+                    match wt {
+                        "StartsWith" => Ok(Expr::StartsWith(val.to_string())),
+                        "EndsWith" => Ok(Expr::EndsWith(val.to_string())),
+                        "Contains" => Ok(Expr::Contains(val.to_string())),
+                        _ => Ok(Expr::Term(term)),
+                    }
+                } else {
+                    Ok(Expr::Term(term))
+                }
             }
             _ => {
                 let tok = self.peek();
@@ -1062,6 +1083,21 @@ fn is_valid_field_name(field: &str) -> bool {
         .all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '.')
 }
 
+fn detect_wildcard(value: &str) -> Option<(&'static str, &str)> {
+    if !value.contains('*') || value.len() < 2 {
+        return None;
+    }
+    if value.starts_with('*') && value.ends_with('*') {
+        Some(("Contains", &value[1..value.len() - 1]))
+    } else if value.starts_with('*') {
+        Some(("EndsWith", &value[1..]))
+    } else if value.ends_with('*') {
+        Some(("StartsWith", &value[..value.len() - 1]))
+    } else {
+        None
+    }
+}
+
 fn validate_regex_pattern(pattern: &str, pos: usize) -> Result<(), ParseError> {
     if pattern.len() > MAX_REGEX_LEN {
         return Err(ParseError::new(
@@ -1191,6 +1227,9 @@ fn eval_expr(
             .all(|e| eval_expr(e, item, options, columnar, idx)),
         Expr::Not(inner) => !eval_expr(inner, item, options, columnar, idx),
         Expr::Term(term) => contains_text(item, term, options),
+        Expr::StartsWith(prefix) => starts_with_text(item, prefix, options.case_sensitive),
+        Expr::EndsWith(suffix) => ends_with_text(item, suffix, options.case_sensitive),
+        Expr::Contains(substr) => contains_text(item, substr, options),
         Expr::FuzzyTerm(term) => fuzzy_contains_text(item, term, options),
         Expr::Predicate(pred) => eval_predicate(pred, item, options, columnar, idx),
         Expr::All => true,
@@ -1588,6 +1627,60 @@ fn contains_text(value: &Value, term: &str, options: EvalOptions) -> bool {
     }
 }
 
+fn starts_with_text(value: &Value, prefix: &str, case_sensitive: bool) -> bool {
+    let p = if case_sensitive {
+        prefix.to_string()
+    } else {
+        prefix.to_ascii_lowercase()
+    };
+    match value {
+        Value::String(s) => {
+            let s = if case_sensitive { s.clone() } else { s.to_ascii_lowercase() };
+            s.starts_with(&p)
+        }
+        Value::Number(n) => {
+            let s = n.to_string();
+            let s = if case_sensitive { s } else { s.to_ascii_lowercase() };
+            s.starts_with(&p)
+        }
+        Value::Bool(b) => {
+            let s = b.to_string();
+            let s = if case_sensitive { s } else { s.to_ascii_lowercase() };
+            s.starts_with(&p)
+        }
+        Value::Array(arr) => arr.iter().any(|v| starts_with_text(v, prefix, case_sensitive)),
+        Value::Object(map) => map.values().any(|v| starts_with_text(v, prefix, case_sensitive)),
+        Value::Null => false,
+    }
+}
+
+fn ends_with_text(value: &Value, suffix: &str, case_sensitive: bool) -> bool {
+    let s = if case_sensitive {
+        suffix.to_string()
+    } else {
+        suffix.to_ascii_lowercase()
+    };
+    match value {
+        Value::String(v) => {
+            let v = if case_sensitive { v.clone() } else { v.to_ascii_lowercase() };
+            v.ends_with(&s)
+        }
+        Value::Number(n) => {
+            let n = n.to_string();
+            let n = if case_sensitive { n } else { n.to_ascii_lowercase() };
+            n.ends_with(&s)
+        }
+        Value::Bool(b) => {
+            let b = b.to_string();
+            let b = if case_sensitive { b } else { b.to_ascii_lowercase() };
+            b.ends_with(&s)
+        }
+        Value::Array(arr) => arr.iter().any(|v| ends_with_text(v, suffix, case_sensitive)),
+        Value::Object(map) => map.values().any(|v| ends_with_text(v, suffix, case_sensitive)),
+        Value::Null => false,
+    }
+}
+
 /// FUZZY match on a field value (string/array).
 fn fuzzy_match(
     target: &Value,
@@ -1823,7 +1916,7 @@ fn predicate_cost(pred: &Predicate, engine: Option<&Engine>) -> usize {
 fn expr_cost(expr: &Expr, engine: Option<&Engine>) -> usize {
     match expr {
         Expr::Predicate(pred) => predicate_cost(pred, engine),
-        Expr::Term(_) | Expr::FuzzyTerm(_) => 10,
+        Expr::Term(_) | Expr::FuzzyTerm(_) | Expr::StartsWith(_) | Expr::EndsWith(_) | Expr::Contains(_) => 10,
         Expr::And(_) => 6,
         Expr::Or(_) => 12,
         Expr::Not(inner) => expr_cost(inner, engine) + 1,

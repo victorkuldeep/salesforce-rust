@@ -5,7 +5,21 @@ var searchWasm = (function (exports) {
     /* @ts-self-types="./search_wasm.d.ts" */
 
     /**
-     * WASM: aggregate over an engine handle by spec.
+     *
+     * * WASM: Aggregate over engine handle.
+     * *
+     * * # Arguments
+     * * * `handle` - Engine handle from init_engine
+     * * * `spec_json` - Aggregation specification
+     * *
+     * * # Returns
+     * * JsValue array of aggregation results
+     * *
+     * * # Example
+     * * ```js
+     * * const results = aggregate_handle(handle, '[{"field": "price", "op": "SUM"}]');
+     * * ```
+     *
      * @param {number} handle
      * @param {string} spec_json
      * @returns {any}
@@ -21,7 +35,21 @@ var searchWasm = (function (exports) {
     }
 
     /**
-     * WASM: aggregate over an engine handle and return JSON string.
+     *
+     * * WASM: Aggregate over engine handle and return JSON string.
+     * *
+     * * # Arguments
+     * * * `handle` - Engine handle from init_engine
+     * * * `spec_json` - Aggregation specification
+     * *
+     * * # Returns
+     * * JSON string array of aggregation results
+     * *
+     * * # Example
+     * * ```js
+     * * const results = aggregate_handle_json(handle, '[{"field": "price", "op": "SUM"}]');
+     * * ```
+     *
      * @param {number} handle
      * @param {string} spec_json
      * @returns {string}
@@ -48,7 +76,25 @@ var searchWasm = (function (exports) {
     }
 
     /**
-     * WASM: aggregate over a JSON array by spec.
+     *
+     * * WASM: Aggregate data using aggregation spec.
+     * *
+     * * Compute SUM, AVG, MIN, MAX, COUNT, DISTINCT on field values.
+     * *
+     * * # Arguments
+     * * * `items_json` - JSON array string
+     * * * `spec_json` - Aggregation specification:
+     * *   - field: string (field path like "price" or "meta.region")
+     * *   - op: "SUM" | "AVG" | "MIN" | "MAX" | "COUNT" | "DISTINCT"
+     * *
+     * * # Returns
+     * * JsValue array of aggregation results
+     * *
+     * * # Example
+     * * ```js
+     * * const results = aggregate_json(data, '[{"field": "price", "op": "SUM"}]');
+     * * ```
+     *
      * @param {string} items_json
      * @param {string} spec_json
      * @returns {any}
@@ -66,7 +112,21 @@ var searchWasm = (function (exports) {
     }
 
     /**
-     * WASM: create an index for a field.
+     *
+     * * WASM: Create an index for a specific field.
+     * *
+     * * # Arguments
+     * * * `handle` - Engine handle from init_engine
+     * * * `field` - Field name to index (e.g., "country" or "meta.region")
+     * *
+     * * # Returns
+     * * Ok(()) on success
+     * *
+     * * # Example
+     * * ```js
+     * * create_index(handle, "country");
+     * * ```
+     *
      * @param {number} handle
      * @param {string} field
      */
@@ -80,7 +140,17 @@ var searchWasm = (function (exports) {
     }
 
     /**
-     * WASM: drop a dataset handle and free memory.
+     *
+     * * WASM: Drop an engine handle and free memory.
+     * *
+     * * # Arguments
+     * * * `handle` - Engine handle from init_engine
+     * *
+     * * # Example
+     * * ```js
+     * * drop_engine(handle);
+     * * ```
+     *
      * @param {number} handle
      */
     function drop_engine(handle) {
@@ -88,7 +158,21 @@ var searchWasm = (function (exports) {
     }
 
     /**
-     * WASM: drop an index for a field.
+     *
+     * * WASM: Drop an index for a specific field.
+     * *
+     * * # Arguments
+     * * * `handle` - Engine handle from init_engine
+     * * * `field` - Field name to remove index for
+     * *
+     * * # Returns
+     * * Ok(()) on success
+     * *
+     * * # Example
+     * * ```js
+     * * drop_index(handle, "country");
+     * * ```
+     *
      * @param {number} handle
      * @param {string} field
      */
@@ -102,7 +186,23 @@ var searchWasm = (function (exports) {
     }
 
     /**
-     * WASM: return cache stats for a handle (hits/misses/entries/cap).
+     *
+     * * WASM: Get engine cache statistics.
+     * *
+     * * Returns cache performance metrics.
+     * *
+     * * # Arguments
+     * * * `handle` - Engine handle from init_engine
+     * *
+     * * # Returns
+     * * JsValue with: { hits, misses, entries, cap }
+     * *
+     * * # Example
+     * * ```js
+     * * const stats = engine_cache_stats(handle);
+     * * console.log(stats.hits, stats.misses);
+     * * ```
+     *
      * @param {number} handle
      * @returns {any}
      */
@@ -115,7 +215,17 @@ var searchWasm = (function (exports) {
     }
 
     /**
-     * WASM: return engine version string.
+     *
+     * * WASM: Get engine version string.
+     * *
+     * * # Returns
+     * * Version string (e.g., "search_wasm_v1.1.0")
+     * *
+     * * # Example
+     * * ```js
+     * * console.log(engine_version());
+     * * ```
+     *
      * @returns {string}
      */
     function engine_version() {
@@ -132,7 +242,25 @@ var searchWasm = (function (exports) {
     }
 
     /**
-     * WASM: execute a query using a dataset handle.
+     *
+     * * WASM: Execute search query using engine handle.
+     * *
+     * * Returns all matching records (use execute_query_paged for pagination).
+     * * Results are cached for fast repeat queries.
+     * *
+     * * # Arguments
+     * * * `handle` - Engine handle from init_engine
+     * * * `query` - Search query string
+     * *
+     * * # Returns
+     * * JSON string array of matching objects
+     * *
+     * * # Example
+     * * ```js
+     * * const results = execute_query(handle, 'country = "India" AND category = "software"');
+     * * const data = JSON.parse(results);
+     * * ```
+     *
      * @param {number} handle
      * @param {string} query
      * @returns {string}
@@ -159,7 +287,23 @@ var searchWasm = (function (exports) {
     }
 
     /**
-     * WASM: execute a query and return matched row indices.
+     *
+     * * WASM: Execute query and return matched row indices.
+     * *
+     * * Useful for external pagination or custom result handling.
+     * *
+     * * # Arguments
+     * * * `handle` - Engine handle from init_engine
+     * * * `query` - Search query string
+     * *
+     * * # Returns
+     * * JsValue array of indices (e.g., [0, 5, 12, ...])
+     * *
+     * * # Example
+     * * ```js
+     * * const indices = execute_query_indices(handle, 'name CONTAINS "test"');
+     * * ```
+     *
      * @param {number} handle
      * @param {string} query
      * @returns {any}
@@ -175,7 +319,21 @@ var searchWasm = (function (exports) {
     }
 
     /**
-     * WASM: search from JSON string; returns JSON string.
+     *
+     * * WASM: Search from JSON string; returns JSON string result.
+     * *
+     * * # Arguments
+     * * * `items_json` - JSON string representation of array
+     * * * `query` - Search query string
+     * *
+     * * # Returns
+     * * JSON string of matching objects
+     * *
+     * * # Example
+     * * ```js
+     * * const results = execute_query_json('[{"name":"test"}]', 'name = "test"');
+     * * ```
+     *
      * @param {string} items_json
      * @param {string} query
      * @returns {string}
@@ -204,10 +362,28 @@ var searchWasm = (function (exports) {
     }
 
     /**
-     * WASM: execute a query and return a paginated result with accurate total match count.
-     * Returns JSON: { total_matches: usize, rows: [...] }
-     * Use LIMIT and OFFSET in the query string to control pagination, e.g.:
-     *   execute_query_paged(handle, "country = \"USA\" LIMIT 25 OFFSET 0")
+     *
+     * * WASM: Execute query with pagination support.
+     * *
+     * * Returns paginated results with accurate total match count.
+     * * Use LIMIT and OFFSET in query for pagination control.
+     * *
+     * * # Arguments
+     * * * `handle` - Engine handle from init_engine
+     * * * `query` - Search query (include LIMIT and OFFSET, e.g., 'country = "USA" LIMIT 25 OFFSET 0')
+     * *
+     * * # Returns
+     * * JSON string: { "total_matches": number, "rows": [...] }
+     * *
+     * * # Example
+     * * ```js
+     * * // Get first page of 25 results:
+     * * const result = execute_query_paged(handle, 'category = "software" LIMIT 25 OFFSET 0');
+     * * const data = JSON.parse(result);
+     * * console.log(data.total_matches); // Total matching records
+     * * console.log(data.rows);          // First 25 records
+     * * ```
+     *
      * @param {number} handle
      * @param {string} query
      * @returns {string}
@@ -234,9 +410,42 @@ var searchWasm = (function (exports) {
     }
 
     /**
-     * WASM: return the number of rows and approximate in-memory byte size for a given engine handle.
-     * Useful for displaying memory savings in a demo UI.
-     * Returns JSON: { row_count: usize, approx_bytes: usize }
+     *
+     * * WASM: Get engine data size info.
+     * *
+     * * Returns row count and approximate in-memory byte size.
+     * * Useful for displaying memory savings in demo UI.
+     * *
+     * * # Arguments
+     * * * `handle` - Engine handle from init_engine
+     * *
+     * * # Returns
+     * * JSON string: { "row_count": number, "approx_bytes": number }
+     * *
+     * * # Example
+     * * ```js
+     * * const info = get_engine_data_size(handle);
+     * * console.log(JSON.parse(info).row_count);
+     * * ```
+     *
+     *
+     * * WASM: Get engine data size info.
+     * *
+     * * Returns row count and approximate in-memory byte size.
+     * * Useful for displaying memory savings in demo UI.
+     * *
+     * * # Arguments
+     * * * `handle` - Engine handle from init_engine
+     * *
+     * * # Returns
+     * * JSON string: { "row_count": number, "approx_bytes": number }
+     * *
+     * * # Example
+     * * ```js
+     * * const info = get_engine_data_size(handle);
+     * * console.log(JSON.parse(info).row_count);
+     * * ```
+     *
      * @param {number} handle
      * @returns {string}
      */
@@ -260,7 +469,23 @@ var searchWasm = (function (exports) {
     }
 
     /**
-     * WASM: return metrics snapshot for a handle.
+     *
+     * * WASM: Get engine performance metrics.
+     * *
+     * * Returns latency and cache performance metrics.
+     * *
+     * * # Arguments
+     * * * `handle` - Engine handle from init_engine
+     * *
+     * * # Returns
+     * * JsValue with: { p95_latency, avg_latency, cache_hits, cache_misses, cache_hit_rate }
+     * *
+     * * # Example
+     * * ```js
+     * * const metrics = get_metrics(handle);
+     * * console.log(metrics.p95_latency);
+     * * ```
+     *
      * @param {number} handle
      * @returns {any}
      */
@@ -273,7 +498,23 @@ var searchWasm = (function (exports) {
     }
 
     /**
-     * WASM: initialize a dataset handle for repeated queries.
+     *
+     * * WASM: Initialize a search engine from JSON string.
+     * *
+     * * Creates an engine handle for repeated queries without re-parsing data.
+     * *
+     * * # Arguments
+     * * * `items_json` - JSON string of array of objects to search
+     * *
+     * * # Returns
+     * * Engine handle (u32) for use with execute_query functions
+     * *
+     * * # Example
+     * * ```js
+     * * const handle = init_engine('[{"name":"test"}, {"name":"demo"}]');
+     * * const results = execute_query(handle, 'name = "test"');
+     * * ```
+     *
      * @param {string} items_json
      * @returns {number}
      */
@@ -288,14 +529,26 @@ var searchWasm = (function (exports) {
     }
 
     /**
-     * WASM: initialize a search engine from raw UTF-8 JSON bytes (e.g. from a decompressed Uint8Array).
      *
-     * Zero-copy advantage: JS passes the decompressed byte array directly without converting it
-     * to a JS string first. WASM receives the bytes, decodes UTF-8, and parses JSON entirely
-     * inside linear memory — the JS heap never holds a string copy of the full dataset.
+     * * WASM: Initialize search engine from raw UTF-8 bytes.
+     * *
+     * * Zero-copy:接收解压后的字节数组,直接在 WASM 内存中解析 JSON,
+     * * 避免 JS 堆中持有完整数据集的字符串副本。
+     * *
+     * * # Arguments
+     * * * `bytes` - UTF-8 encoded JSON bytes (e.g., from decompressed Uint8Array)
+     * * * `options_json` - Same format as init_engine_with_options
+     * *
+     * * # Returns
+     * * Engine handle (u32) for use with execute_query functions
+     * *
+     * * # Example
+     * * ```js
+     * * // After decompressing .gz file:
+     * * const handle = init_engine_from_bytes(decompressedBytes, '{}');
+     * * const results = execute_query(handle, 'country = "India"');
+     * * ```
      *
-     * Options JSON is the same format as init_engine_with_options.
-     * Returns a handle for use with execute_query / execute_query_paged / drop_engine.
      * @param {Uint8Array} bytes
      * @param {string} options_json
      * @returns {number}
@@ -313,7 +566,21 @@ var searchWasm = (function (exports) {
     }
 
     /**
-     * WASM: initialize a dataset handle with custom index fields.
+     *
+     * * WASM: Initialize search engine with custom index fields.
+     * *
+     * * # Arguments
+     * * * `items_json` - JSON string of array to search
+     * * * `indexes_json` - Array of field names to pre-index for faster lookups
+     * *
+     * * # Returns
+     * * Engine handle (u32)
+     * *
+     * * # Example
+     * * ```js
+     * * const handle = init_engine_with_indexes(data, '["country", "category"]');
+     * * ```
+     *
      * @param {string} items_json
      * @param {any} indexes_json
      * @returns {number}
@@ -329,7 +596,28 @@ var searchWasm = (function (exports) {
     }
 
     /**
-     * WASM: initialize a dataset handle with options JSON (future-proof).
+     *
+     * * WASM: Initialize search engine with options JSON (future-proof).
+     * *
+     * * # Arguments
+     * * * `items_json` - JSON string of array to search
+     * * * `options_json` - JSON object with optional settings:
+     * *   - indexes: Array of field names to index
+     * *   - query_cache_cap: Maximum number of cached queries
+     * *   - columnar: Enable columnar storage
+     * *   - columnar_fields: Fields to store in columnar format
+     * *
+     * * # Returns
+     * * Engine handle (u32)
+     * *
+     * * # Example
+     * * ```js
+     * * const handle = init_engine_with_options(data, JSON.stringify({
+     * *   indexes: ["country", "category"],
+     * *   query_cache_cap: 100
+     * * }));
+     * * ```
+     *
      * @param {string} items_json
      * @param {string} options_json
      * @returns {number}
@@ -347,7 +635,22 @@ var searchWasm = (function (exports) {
     }
 
     /**
-     * WASM: list index stats for a handle.
+     *
+     * * WASM: List all indexes for an engine handle.
+     * *
+     * * Returns index statistics for each indexed field.
+     * *
+     * * # Arguments
+     * * * `handle` - Engine handle from init_engine
+     * *
+     * * # Returns
+     * * JsValue array: [{ field, unique_values, sample_values }]
+     * *
+     * * # Example
+     * * ```js
+     * * const indexes = list_indexes(handle);
+     * * ```
+     *
      * @param {number} handle
      * @returns {any}
      */
@@ -360,7 +663,21 @@ var searchWasm = (function (exports) {
     }
 
     /**
-     * WASM: search from JsValue array; returns JsValue array.
+     *
+     * * WASM: Search from JsValue array; returns JsValue array.
+     * *
+     * * # Arguments
+     * * * `items` - JSON array as JsValue (e.g., from JavaScript array)
+     * * * `query` - Search query string (e.g., 'country = "India" AND category = "software"')
+     * *
+     * * # Returns
+     * * Array of matching JSON objects
+     * *
+     * * # Example
+     * * ```js
+     * * const results = search_json(dataArray, 'name LIKE "%test%"');
+     * * ```
+     *
      * @param {any} items
      * @param {string} query
      * @returns {any}
@@ -376,7 +693,21 @@ var searchWasm = (function (exports) {
     }
 
     /**
-     * WASM: search from JSON string; returns JsValue array.
+     *
+     * * WASM: Search from JSON string; returns JsValue array.
+     * *
+     * * # Arguments
+     * * * `items_json` - JSON string representation of array
+     * * * `query` - Search query string
+     * *
+     * * # Returns
+     * * Array of matching JSON objects
+     * *
+     * * # Example
+     * * ```js
+     * * const results = search_json_string('[{"name":"test"}]', 'name = "test"');
+     * * ```
+     *
      * @param {string} items_json
      * @param {string} query
      * @returns {any}
@@ -394,7 +725,19 @@ var searchWasm = (function (exports) {
     }
 
     /**
-     * WASM: configure the global query cache size (LRU capacity).
+     *
+     * * WASM: Configure global query cache size.
+     * *
+     * * Sets the LRU cache capacity for parsed queries.
+     * *
+     * * # Arguments
+     * * * `cap` - Maximum number of queries to cache
+     * *
+     * * # Example
+     * * ```js
+     * * set_query_cache_size(1024);
+     * * ```
+     *
      * @param {number} cap
      */
     function set_query_cache_size(cap) {
@@ -402,7 +745,23 @@ var searchWasm = (function (exports) {
     }
 
     /**
-     * WASM: replace dataset contents for a handle.
+     *
+     * * WASM: Replace dataset contents for an existing engine handle.
+     * *
+     * * Updates the data while preserving engine configuration (indexes, cache settings).
+     * *
+     * * # Arguments
+     * * * `handle` - Engine handle from init_engine
+     * * * `items_json` - New JSON array string to replace existing data
+     * *
+     * * # Returns
+     * * Ok(()) on success
+     * *
+     * * # Example
+     * * ```js
+     * * update_engine(handle, '[{"name":"new data"}]');
+     * * ```
+     *
      * @param {number} handle
      * @param {string} items_json
      */
@@ -416,7 +775,23 @@ var searchWasm = (function (exports) {
     }
 
     /**
-     * WASM: validate a query and return structured errors (no execution).
+     *
+     * * WASM: Validate query syntax without executing.
+     * *
+     * * Returns validation result with any errors or warnings.
+     * *
+     * * # Arguments
+     * * * `query` - Search query string to validate
+     * *
+     * * # Returns
+     * * JsValue: { ok: boolean, normalized: string?, error: { message, pos }?, warnings: [] }
+     * *
+     * * # Example
+     * * ```js
+     * * const result = validate_query('country = "India"');
+     * * if (!result.ok) console.log(result.error.message);
+     * * ```
+     *
      * @param {string} query
      * @returns {any}
      */
